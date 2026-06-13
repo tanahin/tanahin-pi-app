@@ -6,34 +6,23 @@
   <title>Tanahin - Ukur Tanah AI</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f8fafc; color: #1e293b; padding: 20px;
-    }
-  .container { max-width: 500px; margin: 0 auto; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: #1e293b; padding: 20px; }
+ .container { max-width: 500px; margin: 0 auto; }
     h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
-  .subtitle { color: #64748b; margin-bottom: 24px; font-size: 16px; }
-  .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-  .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-  .upload-box {
-      aspect-ratio: 16/9; border: 2px dashed #cbd5e1; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; overflow: hidden; position: relative; background: #f8fafc;
-    }
-  .upload-box:hover { border-color: #8b5cf6; }
-  .upload-box img { width: 100%; height: 100%; object-fit: cover; }
-  .upload-box span { font-size: 14px; color: #64748b; text-align: center; padding: 8px; }
-  .upload-label { font-size: 14px; color: #64748b; margin-bottom: 12px; font-weight: 500; }
-  .btn-primary {
-      width: 100%; background: #8b5cf6; color: white; border: none;
-      padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600;
-      cursor: pointer; margin-top: 8px;
-    }
-  .btn-primary:disabled { background: #c4b5fd; cursor: not-allowed; }
-  .result-box { background: #f1f5f9; border-radius: 12px; padding: 16px; margin-top: 16px; }
-  .result-item { display: flex; justify-content: space-between; margin-bottom: 8px; }
-  .result-label { color: #64748b; }
-  .result-value { font-weight: 600; font-size: 18px; }
+ .subtitle { color: #64748b; margin-bottom: 24px; font-size: 16px; }
+ .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+ .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+ .upload-box { aspect-ratio: 16/9; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; background: #f8fafc; }
+ .upload-box:hover { border-color: #8b5cf6; }
+ .upload-box img { width: 100%; height: 100%; object-fit: cover; }
+ .upload-box span { font-size: 14px; color: #64748b; text-align: center; padding: 8px; }
+ .upload-label { font-size: 14px; color: #64748b; margin-bottom: 12px; font-weight: 500; }
+ .btn-primary { width: 100%; background: #8b5cf6; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+ .btn-primary:disabled { background: #c4b5fd; cursor: not-allowed; }
+ .result-box { background: #f1f5f9; border-radius: 12px; padding: 16px; margin-top: 16px; }
+ .result-item { display: flex; justify-content: space-between; margin-bottom: 8px; }
+ .result-label { color: #64748b; }
+ .result-value { font-weight: 600; font-size: 18px; }
    #fileInput { display: none; }
   </style>
 </head>
@@ -41,7 +30,6 @@
   <div class="container">
     <h1>Tanahin</h1>
     <p class="subtitle">Ukur tanah Anda dengan foto 4 sudut + AI</p>
-
     <div class="card">
       <div class="upload-label">Upload Foto Tanah (4 Foto Sudut)</div>
       <input type="file" id="fileInput" accept="image/*" multiple>
@@ -59,11 +47,9 @@
           <span id="preview4">+ Foto 4</span>
         </div>
       </div>
-      <p style="font-size:12px;color:#64748b">Tips: Foto 1 wajib ada kertas A4 untuk skala. Klik kotak mana aja buat pilih 4 foto sekaligus</p>
+      <p style="font-size:12px;color:#64748b">Tips: Klik kotak mana aja, pilih 4 foto sekaligus</p>
     </div>
-
     <button type="button" class="btn-primary" id="analisisBtn">Analisis & Ukur Tanah</button>
-
     <div class="card" id="hasilCard" style="display:none">
       <h3 style="margin-bottom:12px">Hasil Pengukuran AI</h3>
       <div class="result-box">
@@ -78,73 +64,45 @@
       </div>
     </div>
   </div>
-
 <script>
 let selectedFiles = [];
-
-// Pilih 4 foto sekaligus
 document.getElementById('fileInput').addEventListener('change', function(e) {
   selectedFiles = Array.from(e.target.files).slice(0, 4);
-
-  // Preview 4 foto
   for (let i = 0; i < 4; i++) {
     const previewEl = document.getElementById('preview' + (i+1));
     if (selectedFiles[i]) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        previewEl.innerHTML = `<img src="${e.target.result}">`;
-      };
+      reader.onload = (e) => { previewEl.innerHTML = `<img src="${e.target.result}">`; };
       reader.readAsDataURL(selectedFiles[i]);
     } else {
       previewEl.innerHTML = `+ Foto ${i+1}${i==0?' (A4)':''}`;
     }
   }
 });
-
-// Tombol Analisis - UDAH FIX 100%
 document.getElementById('analisisBtn').addEventListener('click', async function() {
-  if (selectedFiles.length < 4) {
-    alert('Pilih 4 foto dulu bro. Klik kotak mana aja');
-    return;
-  }
-
-  const btn = this;
-  btn.innerText = '⏳ AI lagi ngukur...';
-  btn.disabled = true;
-
+  if (selectedFiles.length < 4) { alert('Pilih 4 foto dulu bro'); return; }
+  const btn = this; btn.innerText = '⏳ AI lagi ngukur...'; btn.disabled = true;
   try {
     const foto1 = await fileToBase64(selectedFiles[0]);
     const foto2 = await fileToBase64(selectedFiles[1]);
     const foto3 = await fileToBase64(selectedFiles[2]);
     const foto4 = await fileToBase64(selectedFiles[3]);
-
     const res = await fetch('/.netlify/functions/ukur', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ foto1, foto2, foto3, foto4 })
     });
-
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-
+    const data = await res.json(); if (data.error) throw new Error(data.error);
     document.getElementById('ukuranTanah').innerText = data.panjang + 'm x ' + data.lebar + 'm';
     document.getElementById('luasTanah').innerText = data.luas;
     document.getElementById('hasilCard').style.display = 'block';
-
-  } catch (err) {
-    alert('Gagal: ' + err.message);
-  } finally {
-    btn.innerText = 'Analisis & Ukur Tanah';
-    btn.disabled = false;
-  }
+  } catch (err) { alert('Gagal: ' + err.message);
+  } finally { btn.innerText = 'Analisis & Ukur Tanah'; btn.disabled = false; }
 });
-
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
+    reader.onload = () => resolve(reader.result); reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
