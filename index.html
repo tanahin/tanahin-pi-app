@@ -112,16 +112,42 @@
             <h1>🏡 Tanahin</h1>
             <p>Hasil Pengukuran Tanah + RAB Otomatis</p>
         </div>
+<!-- ===== FORM UPLOAD FOTO TANAH ===== -->
+<div id="uploadSection" style="background:white;padding:16px;border-radius:12px;margin-bottom:20px">
+  
+  <div style="background:#f0f7ff;padding:12px;border-radius:8px;margin-bottom:16px;font-size:14px">
+    <b>📸 Panduan Foto Biar Akurat:</b><br>
+    1. Foto 4 sudut tanah dari atas<br>
+    2. <b>Wajib:</b> Taruh kertas A4 di foto pertama sebagai skala<br>
+    3. Foto terang, jangan miring
+  </div>
 
+  <label>Foto Sudut 1 + A4:</label>
+  <input type="file" id="foto1" accept="image/*" style="width:100%;margin-bottom:12px">
+  
+  <label>Foto Sudut 2:</label>
+  <input type="file" id="foto2" accept="image/*" style="width:100%;margin-bottom:12px">
+  
+  <label>Foto Sudut 3:</label>
+  <input type="file" id="foto3" accept="image/*" style="width:100%;margin-bottom:12px">
+  
+  <label>Foto Sudut 4:</label>
+  <input type="file" id="foto4" accept="image/*" style="width:100%;margin-bottom:16px">
+
+  <button id="analisisBtn" style="width:100%;padding:14px;background:#2c5aa0;color:white;border:none;border-radius:8px;font-size:16px;font-weight:bold">
+    Analisis & Ukur Tanah
+  </button>
+</div>
+<!-- ===== AKHIR FORM ===== -->
         <div id="mainContent">
             <div class="result-box">
                 <div class="result-item">
                     <span>Luas Tanah:</span>
-                    <span><strong>194.56 m²</strong></span>
+                    <span><strong>id="luasTanah">194.56 m²</strong></span>
                 </div>
                 <div class="result-item">
                     <span>Ukuran:</span>
-                    <span>15.2m x 12.8m</span>
+                    <span>id="ukuranTanah">15.2m x 12.8m</span>
                 </div>
                 <div class="result-item">
                     <span>Akurasi:</span>
