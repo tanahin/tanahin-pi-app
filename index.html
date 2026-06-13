@@ -35,6 +35,8 @@
 <script>
 // ===== TAMBAHAN BUAT PANGGIL UKUR.JS =====
 async function kirimKeGemini() {
+  alert('1. Tombol kepencet'); // DEBUG 1
+
   const btnAnalisis = document.getElementById('analisisBtn');
   const foto1 = await toBase64(document.getElementById('foto1').files[0]);
   const foto2 = await toBase64(document.getElementById('foto2').files[0]);
@@ -46,6 +48,7 @@ async function kirimKeGemini() {
     return;
   }
 
+  alert('2. Mulai fetch ke Netlify'); // DEBUG 2
   btnAnalisis.innerHTML = '⏳ AI lagi ngukur...';
   btnAnalisis.disabled = true;
 
@@ -55,11 +58,13 @@ async function kirimKeGemini() {
       body: JSON.stringify({ foto1, foto2, foto3, foto4 })
     });
 
+    alert('3. Dapat response: ' + res.status); // DEBUG 3
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
     document.getElementById('ukuranTanah').innerText = data.panjang + 'm x ' + data.lebar + 'm';
     document.getElementById('luasTanah').innerText = data.luas + ' m²';
+    alert('4. SUKSES!'); // DEBUG 4
 
   } catch (err) {
     alert('Gagal ukur: ' + err.message);
