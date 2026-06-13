@@ -1,1 +1,4 @@
-
+   {
+     "git.enabled": true,
+     "git.path": "/data/data/com.termux/files/usr/bin/git"
+   }
