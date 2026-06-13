@@ -1,262 +1,85 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tanahin - Ukur Tanah Pakai AI</title>
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            color: #764ba2;
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-        .header p {
-            color: #666;
-            font-size: 14px;
-        }
-        .result-box {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 15px;
-        }
-        .result-item:last-child {
-            margin-bottom: 0;
-            padding-top: 12px;
-            border-top: 2px solid #ddd;
-            font-weight: bold;
-            font-size: 18px;
-            color: #764ba2;
-        }
-        .btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .processing {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        .processing.active {
-            display: block;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #764ba2;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .status {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
-            color: #666;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tanahin - Ukur Tanah AI</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #0f172a; color: white; }
+   .card { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+    input[type="file"] { margin: 10px 0; width: 100%; }
+    button { background: #8b5cf6; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; }
+    button:disabled { background: #4c1d95; }
+   .hasil { font-size: 24px; margin-top: 10px; color: #22d3ee; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🏡 Tanahin</h1>
-            <p>Hasil Pengukuran Tanah + RAB Otomatis</p>
-        </div>
-<!-- ===== FORM UPLOAD FOTO TANAH ===== -->
-<div id="uploadSection" style="background:white;padding:16px;border-radius:12px;margin-bottom:20px">
-  
-  <div style="background:#f0f7ff;padding:12px;border-radius:8px;margin-bottom:16px;font-size:14px">
-    <b>📸 Panduan Foto Biar Akurat:</b><br>
-    1. Foto 4 sudut tanah dari atas<br>
-    2. <b>Wajib:</b> Taruh kertas A4 di foto pertama sebagai skala<br>
-    3. Foto terang, jangan miring
+  <h1>📐 Tanahin.AI</h1>
+
+  <div class="card">
+    <h3>Upload 4 Foto Sudut Tanah</h3>
+    <p>Foto 1 wajib ada kertas A4 di tanah</p>
+    <input type="file" id="foto1" accept="image/*">
+    <input type="file" id="foto2" accept="image/*">
+    <input type="file" id="foto3" accept="image/*">
+    <input type="file" id="foto4" accept="image/*">
+    <button id="analisisBtn">Analisis & Ukur Tanah</button>
   </div>
 
-  <label>Foto Sudut 1 + A4:</label>
-  <input type="file" id="foto1" accept="image/*" style="width:100%;margin-bottom:12px">
-  
-  <label>Foto Sudut 2:</label>
-  <input type="file" id="foto2" accept="image/*" style="width:100%;margin-bottom:12px">
-  
-  <label>Foto Sudut 3:</label>
-  <input type="file" id="foto3" accept="image/*" style="width:100%;margin-bottom:12px">
-  
-  <label>Foto Sudut 4:</label>
-  <input type="file" id="foto4" accept="image/*" style="width:100%;margin-bottom:16px">
+  <div class="card">
+    <h3>Hasil Pengukuran AI</h3>
+    <p>Ukuran: <span class="hasil" id="ukuranTanah">15.2m x 12.8m</span></p>
+    <p>Luas: <span class="hasil" id="luasTanah">194.56 m²</span></p>
+  </div>
 
-  <button id="analisisBtn" style="width:100%;padding:14px;background:#2c5aa0;color:white;border:none;border-radius:8px;font-size:16px;font-weight:bold">
-    Analisis & Ukur Tanah
-  </button>
-</div>
-<!-- ===== AKHIR FORM ===== -->
-        <div id="mainContent">
-            <div class="result-box">
-                <div class="result-item">
-                    <span>Luas Tanah:</span>
-                    <span><strong>id="luasTanah">194.56 m²</strong></span>
-                </div>
-                <div class="result-item">
-                    <span>Ukuran:</span>
-                    <span>id="ukuranTanah">15.2m x 12.8m</span>
-                </div>
-                <div class="result-item">
-                    <span>Akurasi:</span>
-                    <span>+/- 5%</span>
-                </div>
-                <div class="result-item">
-                    <span>Estimasi RAB Rumah:</span>
-                    <span>Rp 2.200.000.000</span>
-                </div>
-            </div>
+<script>
+// ===== TAMBAHAN BUAT PANGGIL UKUR.JS =====
+async function kirimKeGemini() {
+  const btnAnalisis = document.getElementById('analisisBtn');
+  const foto1 = await toBase64(document.getElementById('foto1').files[0]);
+  const foto2 = await toBase64(document.getElementById('foto2').files[0]);
+  const foto3 = await toBase64(document.getElementById('foto3').files[0]);
+  const foto4 = await toBase64(document.getElementById('foto4').files[0]);
 
-            <button class="btn" id="payBtn" onclick="handlePayment()">
-                Download PDF + Excel (1 Pi)
-            </button>
-            
-            <p class="status" id="statusText">Klik tombol untuk download laporan lengkap</p>
-        </div>
+  if (!foto1 ||!foto2 ||!foto3 ||!foto4) {
+    alert('Upload 4 foto sudut tanah dulu bro');
+    return;
+  }
 
-        <div class="processing" id="processingScreen">
-            <div class="spinner"></div>
-            <h3>Processing...</h3>
-            <p style="color: #666; margin-top: 10px;">Menunggu konfirmasi dari Pi Wallet</p>
-        </div>
-    </div>
+  btnAnalisis.innerHTML = '⏳ AI lagi ngukur...';
+  btnAnalisis.disabled = true;
 
-    <script>
-        // Inisialisasi Pi SDK
-        Pi.init({ version: "2.0", sandbox: true }); // true = Testnet, nanti ganti false buat Mainnet
+  try {
+    const res = await fetch('/.netlify/functions/ukur', {
+      method: 'POST',
+      body: JSON.stringify({ foto1, foto2, foto3, foto4 })
+    });
 
-        async function handlePayment() {
-            const payBtn = document.getElementById('payBtn');
-            const statusText = document.getElementById('statusText');
-            const mainContent = document.getElementById('mainContent');
-            const processingScreen = document.getElementById('processingScreen');
-            
-            payBtn.disabled = true;
-            statusText.textContent = 'Menghubungkan ke Pi Wallet...';
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
 
-            try {
-                // 1. Auth dulu biar dapet akses user
-                const scopes = ['payments'];
-                const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
-                
-                // 2. Bikin payment - AMOUNT UDAH 1 PI
-                const paymentData = {
-                    amount: 1, // <-- UDAH GUE SET 1 PI
-                    memo: "Laporan Lengkap Tanahin PDF+Excel",
-                    metadata: { orderId: Date.now().toString() }
-                };
+    document.getElementById('ukuranTanah').innerText = data.panjang + 'm x ' + data.lebar + 'm';
+    document.getElementById('luasTanah').innerText = data.luas + ' m²';
 
-                mainContent.style.display = 'none';
-                processingScreen.classList.add('active');
+  } catch (err) {
+    alert('Gagal ukur: ' + err.message);
+  } finally {
+    btnAnalisis.innerHTML = 'Analisis & Ukur Tanah';
+    btnAnalisis.disabled = false;
+  }
+}
 
-                Pi.createPayment(paymentData, {
-                    // Dipanggil pas user klik BAYAR di Pi Wallet
-                    onReadyForServerApproval: (paymentId) => {
-                        console.log('Approve:', paymentId);
-                        // Kirim ke backend buat di approve
-                        fetch('/api/approve', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ paymentId: paymentId })
-                        });
-                    },
-                    
-                    // Dipanggil pas pembayaran sukses
-                    onReadyForServerCompletion: (paymentId, txid) => {
-                        console.log('Payment sukses:', txid);
-                        statusText.textContent = 'Pembayaran berhasil! Download dimulai...';
-                        
-                        // Trigger download PDF
-                        setTimeout(() => {
-                            window.location.href = '/laporan-tanahin.pdf';
-                            processingScreen.classList.remove('active');
-                            mainContent.style.display = 'block';
-                            payBtn.disabled = false;
-                            payBtn.textContent = 'Download Ulang PDF (1 Pi)';
-                        }, 1500);
-                    },
-                    
-                    // Kalo user cancel
-                    onCancel: (paymentId) => {
-                        console.log('Payment dibatalkan');
-                        processingScreen.classList.remove('active');
-                        mainContent.style.display = 'block';
-                        payBtn.disabled = false;
-                        statusText.textContent = 'Pembayaran dibatalkan';
-                    },
-                    
-                    // Kalo error
-                    onError: (error, payment) => {
-                        console.error('Error:', error);
-                        processingScreen.classList.remove('active');
-                        mainContent.style.display = 'block';
-                        payBtn.disabled = false;
-                        statusText.textContent = 'Terjadi error: ' + error;
-                    }
-                });
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) return resolve(null);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
 
-            } catch (err) {
-                console.error(err);
-                payBtn.disabled = false;
-                statusText.textContent = 'Gagal connect ke Pi. Buka via Pi Browser ya.';
-            }
-        }
-
-        function onIncompletePaymentFound(payment) {
-            console.log('Incomplete payment:', payment);
-        }
-    </script>
+document.getElementById('analisisBtn').onclick = kirimKeGemini;
+</script>
 </body>
 </html>
