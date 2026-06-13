@@ -3,84 +3,72 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tanahin - Ukur Tanah AI</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; background: #0f172a; color: white; }
-   .card { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-    input[type="file"] { margin: 10px 0; width: 100%; }
-    button { background: #8b5cf6; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; }
-    button:disabled { background: #4c1d95; }
-   .hasil { font-size: 24px; margin-top: 10px; color: #22d3ee; }
-  </style>
+  <title>Tanahin</title>
 </head>
 <body>
-  <h1>📐 Tanahin.AI</h1>
+  <h1>Ukur Tanah AI</h1>
 
-  <div class="card">
-    <h3>Upload 4 Foto Sudut Tanah</h3>
-    <p>Foto 1 wajib ada kertas A4 di tanah</p>
-    <input type="file" id="foto1" accept="image/*">
-    <input type="file" id="foto2" accept="image/*">
-    <input type="file" id="foto3" accept="image/*">
-    <input type="file" id="foto4" accept="image/*">
-    <button id="analisisBtn">Analisis & Ukur Tanah</button>
-  </div>
+  <p>Foto 1 - wajib ada A4:</p>
+  <input type="file" id="foto1" accept="image/*"><br><br>
 
-  <div class="card">
-    <h3>Hasil Pengukuran AI</h3>
-    <p>Ukuran: <span class="hasil" id="ukuranTanah">15.2m x 12.8m</span></p>
-    <p>Luas: <span class="hasil" id="luasTanah">194.56 m²</span></p>
-  </div>
+  <p>Foto 2:</p>
+  <input type="file" id="foto2" accept="image/*"><br><br>
+
+  <p>Foto 3:</p>
+  <input type="file" id="foto3" accept="image/*"><br><br>
+
+  <p>Foto 4:</p>
+  <input type="file" id="foto4" accept="image/*"><br><br>
+
+  <button id="analisisBtn">Analisis & Ukur Tanah</button>
+
+  <h3>Hasil:</h3>
+  <p>Ukuran: <span id="ukuranTanah">-</span></p>
+  <p>Luas: <span id="luasTanah">-</span> m²</p>
 
 <script>
-// ===== TAMBAHAN BUAT PANGGIL UKUR.JS =====
 async function kirimKeGemini() {
-  alert('1. Tombol kepencet'); // DEBUG 1
-
-  const btnAnalisis = document.getElementById('analisisBtn');
-  const foto1 = await toBase64(document.getElementById('foto1').files[0]);
-  const foto2 = await toBase64(document.getElementById('foto2').files[0]);
-  const foto3 = await toBase64(document.getElementById('foto3').files[0]);
-  const foto4 = await toBase64(document.getElementById('foto4').files[0]);
-
-  if (!foto1 ||!foto2 ||!foto3 ||!foto4) {
-    alert('Upload 4 foto sudut tanah dulu bro');
-    return;
-  }
-
-  alert('2. Mulai fetch ke Netlify'); // DEBUG 2
-  btnAnalisis.innerHTML = '⏳ AI lagi ngukur...';
-  btnAnalisis.disabled = true;
+  const btn = document.getElementById('analisisBtn');
+  btn.innerText = '⏳ AI lagi ngukur...';
+  btn.disabled = true;
 
   try {
+    const foto1 = await toBase64(document.getElementById('foto1').files[0]);
+    const foto2 = await toBase64(document.getElementById('foto2').files[0]);
+    const foto3 = await toBase64(document.getElementById('foto3').files[0]);
+    const foto4 = await toBase64(document.getElementById('foto4').files[0]);
+
+    if (!foto1 ||!foto2 ||!foto3 ||!foto4) {
+      alert('Upload 4 foto dulu bro');
+      return;
+    }
+
     const res = await fetch('/.netlify/functions/ukur', {
       method: 'POST',
       body: JSON.stringify({ foto1, foto2, foto3, foto4 })
     });
 
-    alert('3. Dapat response: ' + res.status); // DEBUG 3
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
     document.getElementById('ukuranTanah').innerText = data.panjang + 'm x ' + data.lebar + 'm';
-    document.getElementById('luasTanah').innerText = data.luas + ' m²';
-    alert('4. SUKSES!'); // DEBUG 4
+    document.getElementById('luasTanah').innerText = data.luas;
 
   } catch (err) {
-    alert('Gagal ukur: ' + err.message);
+    alert('Gagal: ' + err.message);
   } finally {
-    btnAnalisis.innerHTML = 'Analisis & Ukur Tanah';
-    btnAnalisis.disabled = false;
+    btn.innerText = 'Analisis & Ukur Tanah';
+    btn.disabled = false;
   }
 }
 
 function toBase64(file) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     if (!file) return resolve(null);
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
+    reader.onerror = () => resolve(null);
   });
 }
 
