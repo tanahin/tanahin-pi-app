@@ -3,97 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tanahin</title>
+    <title>Tanahin - Ukur Tanah Pakai AI</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script>Pi.init({ version: "2.0", sandbox: false });</script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; background: #fff; }
-        h1 { margin-bottom: 8px; }
-        p { color: #666; margin-top: 0; }
-        .result-box { background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0; }
-        .result-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px; }
-        .result-item:last-child { margin-bottom: 0; padding-top: 12px; border-top: 2px solid #ddd; font-weight: bold; font-size: 18px; color: #764ba2; }
-        .btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #764ba2;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        .result-item:last-child {
+            margin-bottom: 0;
+            padding-top: 12px;
+            border-top: 2px solid #ddd;
+            font-weight: bold;
+            font-size: 18px;
+            color: #764ba2;
+        }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .processing {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .processing.active {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #764ba2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
-    <h1>🏡 Tanahin</h1>
-    <p>Hasil Pengukuran Tanah + RAB Otomatis</p>
-    <div class="result-box">
-        <div class="result-item">
-            <span>Luas Tanah:</span>
-            <span><b>194.56 m²</b></span>
+    <div class="container">
+        <div class="header">
+            <h1>🏡 Tanahin</h1>
+            <p>Hasil Pengukuran Tanah + RAB Otomatis</p>
         </div>
-        <div class="result-item">
-            <span>Ukuran:</span>
-            <span>15.2m x 12.8m</span>
+
+        <div id="mainContent">
+            <div class="result-box">
+                <div class="result-item">
+                    <span>Luas Tanah:</span>
+                    <span><strong>194.56 m²</strong></span>
+                </div>
+                <div class="result-item">
+                    <span>Ukuran:</span>
+                    <span>15.2m x 12.8m</span>
+                </div>
+                <div class="result-item">
+                    <span>Akurasi:</span>
+                    <span>+/- 5%</span>
+                </div>
+                <div class="result-item">
+                    <span>Estimasi RAB Rumah:</span>
+                    <span>Rp 2.200.000.000</span>
+                </div>
+            </div>
+
+            <button class="btn" id="payBtn" onclick="handlePayment()">
+                Download PDF + Excel (1 Pi)
+            </button>
+            
+            <p class="status" id="statusText">Klik tombol untuk download laporan lengkap</p>
         </div>
-        <div class="result-item">
-            <span>Akurasi:</span>
-            <span>+/- 5%</span>
-        </div>
-        <div class="result-item">
-            <span>Estimasi RAB Rumah:</span>
-            <span>Rp 2.200.000.000</span>
+
+        <div class="processing" id="processingScreen">
+            <div class="spinner"></div>
+            <h3>Processing...</h3>
+            <p style="color: #666; margin-top: 10px;">Menunggu konfirmasi dari Pi Wallet</p>
         </div>
     </div>
-    <button class="btn" onclick="bayarPi()" id="btnBayar">Download PDF + Excel (1 Pi)</button>
-    <script>
-        async function bayarPi() {
-            const btn = document.getElementById('btnBayar');
-            btn.disabled = true;
-            btn.innerText = 'Memproses...';
-            
-            try {
-                const scopes = ['payments'];
-                
-                // INI KUNCINYA: BERESIN DULU PAYMENT YANG NYANGKUT
-                await Pi.authenticate(scopes, async (incompletePayment) => {
-                    if (incompletePayment) {
-                        console.log('Menyelesaikan payment yang pending:', incompletePayment.identifier);
-                        await fetch('/.netlify/functions/complete', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                paymentId: incompletePayment.identifier, 
-                                txid: incompletePayment.transaction.txid 
-                            })
-                        });
-                    }
-                });
 
-                // KALO UDAH BERSIH, BARU BIKIN PAYMENT BARU
-                await Pi.createPayment({
-                    amount: 0.001,
-                    memo: "Pembelian Laporan Tanahin",
-                    metadata: { orderId: Date.now() },
-                }, {
-                    onReadyForServerApproval: async (paymentId) => {
-                        await fetch('/.netlify/functions/approve', {
+    <script>
+        // Inisialisasi Pi SDK
+        Pi.init({ version: "2.0", sandbox: true }); // true = Testnet, nanti ganti false buat Mainnet
+
+        async function handlePayment() {
+            const payBtn = document.getElementById('payBtn');
+            const statusText = document.getElementById('statusText');
+            const mainContent = document.getElementById('mainContent');
+            const processingScreen = document.getElementById('processingScreen');
+            
+            payBtn.disabled = true;
+            statusText.textContent = 'Menghubungkan ke Pi Wallet...';
+
+            try {
+                // 1. Auth dulu biar dapet akses user
+                const scopes = ['payments'];
+                const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                
+                // 2. Bikin payment - AMOUNT UDAH 1 PI
+                const paymentData = {
+                    amount: 1, // <-- UDAH GUE SET 1 PI
+                    memo: "Laporan Lengkap Tanahin PDF+Excel",
+                    metadata: { orderId: Date.now().toString() }
+                };
+
+                mainContent.style.display = 'none';
+                processingScreen.classList.add('active');
+
+                Pi.createPayment(paymentData, {
+                    // Dipanggil pas user klik BAYAR di Pi Wallet
+                    onReadyForServerApproval: (paymentId) => {
+                        console.log('Approve:', paymentId);
+                        // Kirim ke backend buat di approve
+                        fetch('/api/approve', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ paymentId: paymentId })
                         });
                     },
-                    onReadyForServerCompletion: async (paymentId, txid) => {
-                        await fetch('/.netlify/functions/complete', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ paymentId: paymentId, txid: txid })
-                        });
-                        alert("Pembayaran berhasil! No 10 di Pi Developer Portal udah ijo.");
+                    
+                    // Dipanggil pas pembayaran sukses
+                    onReadyForServerCompletion: (paymentId, txid) => {
+                        console.log('Payment sukses:', txid);
+                        statusText.textContent = 'Pembayaran berhasil! Download dimulai...';
+                        
+                        // Trigger download PDF
+                        setTimeout(() => {
+                            window.location.href = '/laporan-tanahin.pdf';
+                            processingScreen.classList.remove('active');
+                            mainContent.style.display = 'block';
+                            payBtn.disabled = false;
+                            payBtn.textContent = 'Download Ulang PDF (1 Pi)';
+                        }, 1500);
                     },
-                    onCancel: (paymentId) => { alert("Pembayaran dibatalkan"); },
-                    onError: (error, payment) => { alert("Error: " + error); }
+                    
+                    // Kalo user cancel
+                    onCancel: (paymentId) => {
+                        console.log('Payment dibatalkan');
+                        processingScreen.classList.remove('active');
+                        mainContent.style.display = 'block';
+                        payBtn.disabled = false;
+                        statusText.textContent = 'Pembayaran dibatalkan';
+                    },
+                    
+                    // Kalo error
+                    onError: (error, payment) => {
+                        console.error('Error:', error);
+                        processingScreen.classList.remove('active');
+                        mainContent.style.display = 'block';
+                        payBtn.disabled = false;
+                        statusText.textContent = 'Terjadi error: ' + error;
+                    }
                 });
 
             } catch (err) {
-                alert("Gagal: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = 'Download PDF + Excel (1 Pi)';
+                console.error(err);
+                payBtn.disabled = false;
+                statusText.textContent = 'Gagal connect ke Pi. Buka via Pi Browser ya.';
             }
+        }
+
+        function onIncompletePaymentFound(payment) {
+            console.log('Incomplete payment:', payment);
         }
     </script>
 </body>
