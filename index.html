@@ -1,111 +1,236 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tanahin - Ukur Tanah AI</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: #1e293b; padding: 20px; }
- .container { max-width: 500px; margin: 0 auto; }
-    h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
- .subtitle { color: #64748b; margin-bottom: 24px; font-size: 16px; }
- .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
- .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
- .upload-box { aspect-ratio: 16/9; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; background: #f8fafc; }
- .upload-box:hover { border-color: #8b5cf6; }
- .upload-box img { width: 100%; height: 100%; object-fit: cover; }
- .upload-box span { font-size: 14px; color: #64748b; text-align: center; padding: 8px; }
- .upload-label { font-size: 14px; color: #64748b; margin-bottom: 12px; font-weight: 500; }
- .btn-primary { width: 100%; background: #8b5cf6; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
- .btn-primary:disabled { background: #c4b5fd; cursor: not-allowed; }
- .result-box { background: #f1f5f9; border-radius: 12px; padding: 16px; margin-top: 16px; }
- .result-item { display: flex; justify-content: space-between; margin-bottom: 8px; }
- .result-label { color: #64748b; }
- .result-value { font-weight: 600; font-size: 18px; }
-   #fileInput { display: none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanahin - Ukur Tanah Pakai AI</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #764ba2;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        .result-item:last-child {
+            margin-bottom: 0;
+            padding-top: 12px;
+            border-top: 2px solid #ddd;
+            font-weight: bold;
+            font-size: 18px;
+            color: #764ba2;
+        }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .processing {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .processing.active {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #764ba2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Tanahin</h1>
-    <p class="subtitle">Ukur tanah Anda dengan foto 4 sudut + AI</p>
-    <div class="card">
-      <div class="upload-label">Upload Foto Tanah (4 Foto Sudut)</div>
-      <input type="file" id="fileInput" accept="image/*" multiple>
-      <div class="upload-grid">
-        <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-          <span id="preview1">+ Foto 1 (A4)</span>
+    <div class="container">
+        <div class="header">
+            <h1>🏡 Tanahin</h1>
+            <p>Hasil Pengukuran Tanah + RAB Otomatis</p>
         </div>
-        <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-          <span id="preview2">+ Foto 2</span>
+
+        <div id="mainContent">
+            <div class="result-box">
+                <div class="result-item">
+                    <span>Luas Tanah:</span>
+                    <span><strong>194.56 m²</strong></span>
+                </div>
+                <div class="result-item">
+                    <span>Ukuran:</span>
+                    <span>15.2m x 12.8m</span>
+                </div>
+                <div class="result-item">
+                    <span>Akurasi:</span>
+                    <span>+/- 5%</span>
+                </div>
+                <div class="result-item">
+                    <span>Estimasi RAB Rumah:</span>
+                    <span>Rp 2.200.000.000</span>
+                </div>
+            </div>
+
+            <button class="btn" id="payBtn" onclick="handlePayment()">
+                Download PDF + Excel (1 Pi)
+            </button>
+            
+            <p class="status" id="statusText">Klik tombol untuk download laporan lengkap</p>
         </div>
-        <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-          <span id="preview3">+ Foto 3</span>
+
+        <div class="processing" id="processingScreen">
+            <div class="spinner"></div>
+            <h3>Processing...</h3>
+            <p style="color: #666; margin-top: 10px;">Menunggu konfirmasi dari Pi Wallet</p>
         </div>
-        <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-          <span id="preview4">+ Foto 4</span>
-        </div>
-      </div>
-      <p style="font-size:12px;color:#64748b">Tips: Klik kotak mana aja, pilih 4 foto sekaligus</p>
     </div>
-    <button type="button" class="btn-primary" id="analisisBtn">Analisis & Ukur Tanah</button>
-    <div class="card" id="hasilCard" style="display:none">
-      <h3 style="margin-bottom:12px">Hasil Pengukuran AI</h3>
-      <div class="result-box">
-        <div class="result-item">
-          <span class="result-label">Ukuran Tanah</span>
-          <span class="result-value" id="ukuranTanah">-</span>
-        </div>
-        <div class="result-item">
-          <span class="result-label">Luas Total</span>
-          <span class="result-value" id="luasTanah">- m²</span>
-        </div>
-      </div>
-    </div>
-  </div>
-<script>
-let selectedFiles = [];
-document.getElementById('fileInput').addEventListener('change', function(e) {
-  selectedFiles = Array.from(e.target.files).slice(0, 4);
-  for (let i = 0; i < 4; i++) {
-    const previewEl = document.getElementById('preview' + (i+1));
-    if (selectedFiles[i]) {
-      const reader = new FileReader();
-      reader.onload = (e) => { previewEl.innerHTML = `<img src="${e.target.result}">`; };
-      reader.readAsDataURL(selectedFiles[i]);
-    } else {
-      previewEl.innerHTML = `+ Foto ${i+1}${i==0?' (A4)':''}`;
-    }
-  }
-});
-document.getElementById('analisisBtn').addEventListener('click', async function() {
-  if (selectedFiles.length < 4) { alert('Pilih 4 foto dulu bro'); return; }
-  const btn = this; btn.innerText = '⏳ AI lagi ngukur...'; btn.disabled = true;
-  try {
-    const foto1 = await fileToBase64(selectedFiles[0]);
-    const foto2 = await fileToBase64(selectedFiles[1]);
-    const foto3 = await fileToBase64(selectedFiles[2]);
-    const foto4 = await fileToBase64(selectedFiles[3]);
-    const res = await fetch('/.netlify/functions/ukur', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ foto1, foto2, foto3, foto4 })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json(); if (data.error) throw new Error(data.error);
-    document.getElementById('ukuranTanah').innerText = data.panjang + 'm x ' + data.lebar + 'm';
-    document.getElementById('luasTanah').innerText = data.luas;
-    document.getElementById('hasilCard').style.display = 'block';
-  } catch (err) { alert('Gagal: ' + err.message);
-  } finally { btn.innerText = 'Analisis & Ukur Tanah'; btn.disabled = false; }
-});
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result); reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-</script>
+
+    <script>
+        // Inisialisasi Pi SDK
+        Pi.init({ version: "2.0", sandbox: true }); // true = Testnet, nanti ganti false buat Mainnet
+
+        async function handlePayment() {
+            const payBtn = document.getElementById('payBtn');
+            const statusText = document.getElementById('statusText');
+            const mainContent = document.getElementById('mainContent');
+            const processingScreen = document.getElementById('processingScreen');
+            
+            payBtn.disabled = true;
+            statusText.textContent = 'Menghubungkan ke Pi Wallet...';
+
+            try {
+                // 1. Auth dulu biar dapet akses user
+                const scopes = ['payments'];
+                const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                
+                // 2. Bikin payment - AMOUNT UDAH 1 PI
+                const paymentData = {
+                    amount: 1, // <-- UDAH GUE SET 1 PI
+                    memo: "Laporan Lengkap Tanahin PDF+Excel",
+                    metadata: { orderId: Date.now().toString() }
+                };
+
+                mainContent.style.display = 'none';
+                processingScreen.classList.add('active');
+
+                Pi.createPayment(paymentData, {
+                    // Dipanggil pas user klik BAYAR di Pi Wallet
+                    onReadyForServerApproval: (paymentId) => {
+                        console.log('Approve:', paymentId);
+                        // Kirim ke backend buat di approve
+                        fetch('/api/approve', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ paymentId: paymentId })
+                        });
+                    },
+                    
+                    // Dipanggil pas pembayaran sukses
+                    onReadyForServerCompletion: (paymentId, txid) => {
+                        console.log('Payment sukses:', txid);
+                        statusText.textContent = 'Pembayaran berhasil! Download dimulai...';
+                        
+                        // Trigger download PDF
+                        setTimeout(() => {
+                            window.location.href = '/laporan-tanahin.pdf';
+                            processingScreen.classList.remove('active');
+                            mainContent.style.display = 'block';
+                            payBtn.disabled = false;
+                            payBtn.textContent = 'Download Ulang PDF (1 Pi)';
+                        }, 1500);
+                    },
+                    
+                    // Kalo user cancel
+                    onCancel: (paymentId) => {
+                        console.log('Payment dibatalkan');
+                        processingScreen.classList.remove('active');
+                        mainContent.style.display = 'block';
+                        payBtn.disabled = false;
+                        statusText.textContent = 'Pembayaran dibatalkan';
+                    },
+                    
+                    // Kalo error
+                    onError: (error, payment) => {
+                        console.error('Error:', error);
+                        processingScreen.classList.remove('active');
+                        mainContent.style.display = 'block';
+                        payBtn.disabled = false;
+                        statusText.textContent = 'Terjadi error: ' + error;
+                    }
+                });
+
+            } catch (err) {
+                console.error(err);
+                payBtn.disabled = false;
+                statusText.textContent = 'Gagal connect ke Pi. Buka via Pi Browser ya.';
+            }
+        }
+
+        function onIncompletePaymentFound(payment) {
+            console.log('Incomplete payment:', payment);
+        }
+    </script>
 </body>
 </html>
